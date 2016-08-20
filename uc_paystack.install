@@ -8,3 +8,118 @@
 function uc_paystack_uninstall() {
   db_query("DELETE FROM {variable} WHERE name LIKE 'uc_paystack_%%'");
 }
+/**
+ * Implements hook_schema().
+ */
+function uc_paystack_schema() {
+  $schema = array();
+
+  $schema['uc_payment_paystack_codes'] = array(
+    'description' => 'Logs paystack Instant Payment Notifications.',
+    'fields' => array(
+      'order_id' => array(
+        'description' => 'The order ID.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'code' => array(
+        'description' => 'The transaction ID for Paystack.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'email' => array(
+        'description' => 'The e-mail address of the buyer.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'received' => array(
+        'description' => 'The IPN receipt timestamp.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'indexes' => array(
+      'order_id' => array('order_id'),
+    ),
+    'foreign keys' => array(
+      'uc_orders' => array(
+        'table' => 'uc_orders',
+        'columns' => array('order_id' => 'order_id'),
+      ),
+    ),
+  );
+
+  return $schema;
+}
+/**
+ * Implements hook_install().
+ */
+function uc_paystack_install() {
+  $t = get_t();
+
+  db_merge('uc_order_statuses')
+    ->key(array('order_status_id' => 'paystack_pending'))
+    ->insertFields(array(
+      'order_status_id' => 'paystack_pending',
+      'title' => $t('Pastack pending'),
+      'state' => 'post_checkout',
+      'weight' => 7,
+      'locked' => 1,
+    ))
+    ->updateFields(array(
+      'state' => 'post_checkout',
+      'locked' => 1,
+    ))
+    ->execute();
+}
+
+/**
+ * Fix incorrect order status configuration.
+ */
+function uc_paystack_update_7001() {
+  db_delete('uc_order_statuses')
+    ->condition('order_status_id', '')
+    ->execute();
+
+  db_merge('uc_order_statuses')
+    ->key(array('order_status_id' => 'paystack_pending'))
+    ->insertFields(array(
+      'order_status_id' => 'paystack_pending',
+      'title' => t('paystack pending'),
+      'state' => 'payment_received',
+      'weight' => 7,
+      'locked' => 1,
+    ))
+    ->updateFields(array(
+      'state' => 'payment_received',
+      'locked' => 1,
+    ))
+    ->execute();
+}
+
+/**
+ * Fix incorrect order state configuration.
+ */
+function uc_paystack_update_7300() {
+  db_update('uc_order_statuses')
+    ->fields(array(
+      'state' => 'post_checkout',
+    ))
+    ->condition('order_status_id', 'paystack_pending')
+    ->execute();
+}
+
+/**
+ * Remove unused variable.
+ */
+function uc_paystack_update_7301() {
+  variable_del('uc_paystack_wps_checkout_button');
+}

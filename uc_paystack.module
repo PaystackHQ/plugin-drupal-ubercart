@@ -9,15 +9,135 @@ function uc_paystack_uc_payment_gateway() {
   );
   return $gateways;
 }
+// ..uc_gestpay_uc_payment_method
 function uc_paystack_uc_payment_method() {
   $methods[] = array(
-    'id' => 'my_pay_credit',
-    'name' => t('My Payment Gateway'),
-    'title' => t('My Payment Gateway'),
-    'desc' => t('Pay through my payment gateway'),
-    'callback' => 'my_payment_method',
-    'redirect' => 'my_payment_form',
+    'id' => 'paystack',
+    'name' => t('Paystack'),
+    'title' => t('Paystack'),
+    'desc' => t('Pay through my paystack'),
+    'callback' => 'uc_paystack_method',
+    'redirect' => 'uc_paystack_form',
     'weight' => 1,
     'checkout' => TRUE,
   );
-  return
+  return $methods;
+}
+
+function uc_paystack_method($op, &$order) {
+  switch ($op) {
+    case 'settings':
+      $form['test_publickey'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Test Public Key'),
+        '#description' => t('Test Public Key'),
+        '#default_value' => variable_get('test_publickey'),
+      );
+      $form['test_secretkey'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Test Secret Key'),
+        '#description' => t('Test Secret Key'),
+        '#default_value' => variable_get('test_secretkey'),
+        );
+      return $form;
+  }
+}
+function uc_paystack_theme() {
+  return array(
+    'uc_paystack_groups_wrapper' => array(
+      'render element'  => 'element',
+    ),
+  );
+}
+function uc_paystack_groups_wrapper($variables) {
+	 return '<div id="achievement-groups">' . $variables['element']['#children'] . '</div>';
+ }
+function uc_paystack_form($form, &$form_state, $order) {
+	// $form['#theme_wrappers'] = array('form');
+$form['#theme_wrappers'] = array();
+// $form['#theme_wrappers'] = array('form');
+  // Collect some information about the order
+  $time = time();
+  $order_id = $order->order_id;
+  $order_total = number_format($order->order_total, 2, '.', '');
+  $customer_email = $order->primary_email;
+  $cart_id = uc_cart_get_id();
+	// die('OKAY');
+	// echo '<script src="https://js.paystack.co/v1/inline.js"
+  //     data-key="{$key}"
+  //     data-email="{$email}"
+  //     data-amount="{$total_amount*100}"
+  //     data-ref="{$code}">
+  //   </script>';
+
+  // Build the data to send to my payment gateway
+  $data = array(
+    'timestamp' => time(),
+    'order_id' => $order->order_id,
+    'order_total' => number_format($order->order_total, 2, '.', ''),
+    'customer_email' => $order->primary_email,
+    'cart_id' => uc_cart_get_id(),
+  );
+
+  // This code goes behind the final checkout button of the checkout pane
+  // foreach ($data as $name => $value) {
+  //   if (!empty($value)) {
+  //     $form[$name] = array('#type' => 'hidden', '#value' => $value);
+  //   }
+  // }
+	$publickey = variable_get ( 'test_publickey', '' );
+	$form['some_text'] = array(
+	  '#markup' => '
+
+	<form><script src="https://js.paystack.co/v1/inline.js"
+	    data-key="'.$publickey .'"
+	      data-email="'.$order->primary_email.'"
+	     data-amount="'.($order->order_total*100).'"
+	      data-ref="{$codgvhgjvvge}">
+	    </script></form>'
+	);
+	//
+  // $form['#action'] = UC_PAYSTACK_URL;
+  // $form['actions'] = array('#type' => 'actions');
+  // $form['actions']['submit'] = array(
+  //   '#type' => 'submit',
+  //   '#value' => variable_get('my_custom_checkout_label', t('Submit Orders')),
+  // );
+  return $form;
+}
+// $comment = t('MyPaymentGateway transaction ID: @PayId', array('@PayId' => $PayId));
+//         uc_payment_enter($order->order_id, 'myPaymentGateway', $payment_amount, $order->uid, NULL, $comment);
+//
+
+// function my_pay_gateway_menu() {
+//   $items['paymentcomplete'] = array(
+//     'title' => 'Payment Complete',
+//     'page callback' => 'my_pay_gateway_complete',
+//     'access arguments' => array('access content'),
+//     'type' => MENU_CALLBACK,
+//   );
+//   return $items;
+// }
+//
+// function my_pay_gateway_complete() {
+//
+//   if (empty($_POST)) {
+//     watchdog('My Payment Gateway',
+//              'Received an empty or incomplete response.  Response details: @request_details',
+//              array('@request_details' =>  print_r($_POST,true)), WATCHDOG_ERROR);
+//
+//     return 'There was a problem with your payment';
+//   }
+//
+//   if ($_POST['status'] == 'SUCCESS') {
+//
+//     // Insert logic here to make sure payment info can be matched to valid order
+//
+//     // Assuming all tests passed and payment was successful
+//     // Complete the order
+//     uc_payment_enter($order_id, 'my_pay_gateway', $amount, $order->uid, NULL, $orderId);
+//     uc_cart_complete_sale($order, variable_get('uc_new_customer_login', FALSE));
+//
+//     return 'Thank you for your purchase';
+//   }
+// }
