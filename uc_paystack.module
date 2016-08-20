@@ -1,0 +1,23 @@
+<?php
+
+define('UC_PAYSTACK_URL', 'https://test.MyMerchantGateway.com');
+
+function uc_paystack_uc_payment_gateway() {
+  $gateways['uc_paystack'] = array(
+    'title' => t('Paystack'),
+    'description' => t('Process payments through my custom payment gateway'),
+  );
+  return $gateways;
+}
+function uc_paystack_uc_payment_method() {
+  $methods[] = array(
+    'id' => 'my_pay_credit',
+    'name' => t('My Payment Gateway'),
+    'title' => t('My Payment Gateway'),
+    'desc' => t('Pay through my payment gateway'),
+    'callback' => 'my_payment_method',
+    'redirect' => 'my_payment_form',
+    'weight' => 1,
+    'checkout' => TRUE,
+  );
+  return

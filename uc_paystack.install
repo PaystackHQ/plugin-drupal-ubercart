@@ -1,0 +1,10 @@
+<?php
+
+/**
+ * @file
+ * Install file for uc_gestpay.module.
+ */
+
+function uc_paystack_uninstall() {
+  db_query("DELETE FROM {variable} WHERE name LIKE 'uc_paystack_%%'");
+}
