@@ -1,7 +1,27 @@
 <?php
 
 define('UC_PAYSTACK_URL', 'https://test.MyMerchantGateway.com');
-
+function uc_paystack_menu() {
+  $items['cart/paystack/complete'] = array(
+    'title' => 'Order complete',
+    'page callback' => 'uc_paystack_complete',
+    // 'page arguments' => array(1, 2),
+    'access arguments' => array('access content'),
+    // 'access callback' => 'uc_mypayment_completion_access',
+    'type' => MENU_CALLBACK,
+    'file' => 'uc_paystack.pages.inc',
+  );
+    return $items;
+}
+// function uc_mypayment_menu() {
+//   $items['cart/mypayment/complete'] = array(
+//     'title' => 'Order complete',
+//     'page callback' => 'uc_mypayment_complete',
+//     'access callback' => 'uc_mypayment_completion_access',
+//     'type' => MENU_CALLBACK,
+//     'file' => 'uc_mypayment.pages.inc',
+//   );
+// }
 function uc_paystack_uc_payment_gateway() {
   $gateways['uc_paystack'] = array(
     'title' => t('Paystack'),
@@ -9,6 +29,7 @@ function uc_paystack_uc_payment_gateway() {
   );
   return $gateways;
 }
+
 // ..uc_gestpay_uc_payment_method
 function uc_paystack_uc_payment_method() {
   $methods[] = array(
@@ -21,8 +42,10 @@ function uc_paystack_uc_payment_method() {
     'weight' => 1,
     'checkout' => TRUE,
   );
+
   return $methods;
 }
+
 
 function uc_paystack_method($op, &$order) {
   switch ($op) {
@@ -42,18 +65,10 @@ function uc_paystack_method($op, &$order) {
       return $form;
   }
 }
-function uc_paystack_theme() {
-  return array(
-    'uc_paystack_groups_wrapper' => array(
-      'render element'  => 'element',
-    ),
-  );
-}
-function uc_paystack_groups_wrapper($variables) {
-	 return '<div id="achievement-groups">' . $variables['element']['#children'] . '</div>';
- }
+
 function uc_paystack_form($form, &$form_state, $order) {
 	// $form['#theme_wrappers'] = array('form');
+
 $form['#theme_wrappers'] = array();
 // $form['#theme_wrappers'] = array('form');
   // Collect some information about the order
@@ -80,30 +95,63 @@ $form['#theme_wrappers'] = array();
   );
 
   // This code goes behind the final checkout button of the checkout pane
-  // foreach ($data as $name => $value) {
-  //   if (!empty($value)) {
-  //     $form[$name] = array('#type' => 'hidden', '#value' => $value);
-  //   }
-  // }
+  foreach ($data as $name => $value) {
+    if (!empty($value)) {
+      $form[$name] = array('#type' => 'hidden', '#value' => $value);
+    }
+  }
 	$publickey = variable_get ( 'test_publickey', '' );
 	$form['some_text'] = array(
-	  '#markup' => '
-
-	<form><script src="https://js.paystack.co/v1/inline.js"
-	    data-key="'.$publickey .'"
-	      data-email="'.$order->primary_email.'"
-	     data-amount="'.($order->order_total*100).'"
-	      data-ref="{$codgvhgjvvge}">
+	  '#markup' => '<form accept-charset="UTF-8" id="uc-paystack-form" method="post" action="/drupal/cart/paystack/complete">
+    <script data-ref="{codgjddvssvge}" data-amount="2700000" data-email="ksesid@yahoo.com" data-key="pk_test_ef545536556b0431b11fd729ccb7c4b633df1340" src="https://js.paystack.co/v1/inline.js">
 	    </script></form>'
 	);
 	//
-  // $form['#action'] = UC_PAYSTACK_URL;
   // $form['actions'] = array('#type' => 'actions');
   // $form['actions']['submit'] = array(
   //   '#type' => 'submit',
   //   '#value' => variable_get('my_custom_checkout_label', t('Submit Orders')),
   // );
   return $form;
+}
+
+function uc_paystack_gateway_menu() {
+  die('ddddss');
+
+  $items['paymentcomplete'] = array(
+    'title' => 'Payment Complete',
+    'page callback' => 'uc_paystack_complete',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+function uc_paystack_gateway_complete() {
+  die('ddddss');
+
+  if (empty($_POST)) {
+    watchdog('My Payment Gateway',
+             'Received an empty or incomplete response.  Response details: @request_details',
+             array('@request_details' =>  print_r($_POST,true)), WATCHDOG_ERROR);
+
+    return 'There was a problem with your payment';
+  }
+
+  if ($_POST['status'] == 'SUCCESS') {
+
+    // Insert logic here to make sure payment info can be matched to valid order
+
+    // Assuming all tests passed and payment was successful
+    // Complete the order
+    uc_payment_enter($order_id, 'uc_paystack', $amount, $order->uid, NULL, $orderId);
+    uc_cart_complete_sale($order, variable_get('uc_new_customer_login', FALSE));
+
+    return 'Thank you for your purchase';
+  }
+}
+function uc_paystack_confirm() {
+
+  die();
 }
 // $comment = t('MyPaymentGateway transaction ID: @PayId', array('@PayId' => $PayId));
 //         uc_payment_enter($order->order_id, 'myPaymentGateway', $payment_amount, $order->uid, NULL, $comment);
