@@ -77,15 +77,55 @@ $form['#theme_wrappers'] = array();
   $order_total = number_format($order->order_total, 2, '.', '');
   $customer_email = $order->primary_email;
   $cart_id = uc_cart_get_id();
-	// die('OKAY');
-	// echo '<script src="https://js.paystack.co/v1/inline.js"
-  //     data-key="{$key}"
-  //     data-email="{$email}"
-  //     data-amount="{$total_amount*100}"
-  //     data-ref="{$code}">
-  //   </script>';
 
   // Build the data to send to my payment gateway
+  function getBaseUrl(){
+      // output: /myproject/index.php
+      $currentPath = $_SERVER['PHP_SELF'];
+
+      // output: Array ( [dirname] => /myproject [basename] => index.php [extension] => php [filename] => index )
+      $pathInfo = pathinfo($currentPath);
+
+      // output: localhost
+      $hostName = $_SERVER['HTTP_HOST'];
+
+      // output: http://
+      $protocol = strtolower(substr($_SERVER["SERVER_PROTOCOL"],0,5))=='https://'?'https://':'http://';
+
+      // return: http://localhost/myproject/
+      return $protocol.$hostName.$pathInfo['dirname']."/";
+  }
+  function generate_new_code($length = 10){
+    $characters = 'RSTUVW01234ABCDEFGHIJ56789KLMNOPQXYZ';
+    $charactersLength = strlen($characters);
+    $randomString = '';
+    for ($i = 0; $i < $length; $i++) {
+        $randomString .= $characters[rand(0, $charactersLength - 1)];
+    }
+    return $randomString;
+  }
+  function check_code($code){
+      $o_exist = db_query("SELECT * FROM `uc_payment_paystack_codes` WHERE `code` = '".$code."'")->fetchAll();
+
+      if (count($o_exist) > 0) {
+          $result = true;
+      } else {
+          $result = false;
+      }
+
+      return $result;
+  }
+  function generate_code(){
+      $code = 0;
+      $check = true;
+
+      while ($check) {
+          $code = generate_new_code();
+          $check = check_code($code);
+      }
+
+      return $code;
+  }
   $data = array(
     'timestamp' => time(),
     'order_id' => $order->order_id,
@@ -94,16 +134,35 @@ $form['#theme_wrappers'] = array();
     'cart_id' => uc_cart_get_id(),
   );
 
-  // This code goes behind the final checkout button of the checkout pane
-  foreach ($data as $name => $value) {
-    if (!empty($value)) {
-      $form[$name] = array('#type' => 'hidden', '#value' => $value);
+  function getPaystackcode($order_id,$email){
+    $o_exist = db_query("SELECT * FROM `uc_payment_paystack_codes` WHERE `order_id` = '".$order_id."'")->fetchAll();
+
+    // echo "<pre>";
+
+    if (count($o_exist) === 0) {
+      $code = generate_code();
+      $o_exist = db_query("INSERT INTO `uc_payment_paystack_codes` (`code_id`, `order_id`, `code`, `email`) VALUES (NULL, '".$order_id."', '".$code."', '".$email."')");
+
+    } else {
+      $code = $o_exist[0]->code;
     }
+
+    return $code;
   }
-	$publickey = variable_get ( 'test_publickey', '' );
+  $pcode = getPaystackcode($order_id,$order->primary_email);
+
+  $actionurl  = getBaseUrl().'/cart/paystack/complete';
+// die('eddd'.getBaseUrl());
+  $publickey = variable_get ( 'test_publickey', '' );
 	$form['some_text'] = array(
-	  '#markup' => '<form accept-charset="UTF-8" id="uc-paystack-form" method="post" action="/drupal/cart/paystack/complete">
-    <script data-ref="{codgjddvssvge}" data-amount="2700000" data-email="ksesid@yahoo.com" data-key="pk_test_ef545536556b0431b11fd729ccb7c4b633df1340" src="https://js.paystack.co/v1/inline.js">
+	  '#markup' => '<form accept-charset="UTF-8" id="uc-paystack-form" method="post" action="'.$actionurl.'">
+    <input type="hidden" value="'.$data['timestamp'].'" name="timestamp">
+    <input type="hidden" value="'.$data['order_id'].'" name="order_id">
+    <input type="hidden" value="'.$data['order_total'].'" name="order_total">
+    <input type="hidden" value="'.$data['customer_email'].'" name="customer_email">
+    <input type="hidden" value="'.$data['cart_id'].'" name="cart_id">
+    <input type="hidden" value="uc_paystack_form" name="form_id">
+    <script data-ref="{'.$pcode.'}" data-amount="2700000" data-email="'.$order->primary_email.'" data-key="pk_test_ef545536556b0431b11fd729ccb7c4b633df1340" src="https://js.paystack.co/v1/inline.js">
 	    </script></form>'
 	);
 	//
@@ -153,6 +212,7 @@ function uc_paystack_confirm() {
 
   die();
 }
+
 // $comment = t('MyPaymentGateway transaction ID: @PayId', array('@PayId' => $PayId));
 //         uc_payment_enter($order->order_id, 'myPaymentGateway', $payment_amount, $order->uid, NULL, $comment);
 //
