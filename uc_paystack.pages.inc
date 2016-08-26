@@ -72,28 +72,16 @@ function uc_paystack_complete($cart_id = 0) {
         // }else{
         //   $key = $live_secretkey;
         // }
-        $contextOptions = array(
-            'ssl' => array(
-                'verify_peer' => false,
-                'cafile' => '/Applications/AMPPS/php-7.0/etc/cacert.pem',
-                'ciphers' => 'HIGH:!SSLv2:!SSLv3',
-            ),
-            'http'=>array(
-       		    'method'=>"GET",
-              'header'=> array("Authorization: Bearer sk_test_877a9699bbc3cf8e42f2190f1b39e35e974d5e2d\r\n")
-       		  )
-        );
-
-        $context = stream_context_create($contextOptions);
         $url = 'https://api.paystack.co/transaction/verify/'.$code;
-         $request = drupal_http_request($url, $contextOptions, $ssl_version = NULL);
-           print_r($request);
-        // $request = file_get_contents($url, false, $context);
-        // print_r($request);
-        // $result = json_decode($request);
+        $options = array(
+          'method' => 'GET', // HTTP Request Type
+          'headers' => array('Authorization' => 'Bearer '.$key),
+        );
+        $request = drupal_http_request($url, $options);
+        $result = json_decode($request->data);
+        // print_r($result);
 
-        print_r($result);
-        // die();
+        // print_r($result);
         // $result = json_decode('{
         //     "status": true,
         //     "message": "Verification successful",
@@ -130,6 +118,8 @@ function uc_paystack_complete($cart_id = 0) {
   }
 
   $verification = verify_txn($code);
+
+
   $order = uc_order_load($order_id);
   $debugmessage = "";
   if(($verification->status===false) || (!property_exists($verification, 'data')) || ($verification->data->status !== 'success')){
