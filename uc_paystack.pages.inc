@@ -56,12 +56,14 @@ function initParams(){
     return $params;
   }
 function uc_paystack_complete($cart_id = 0) {
-  die('dddddd');
+  // die('dddddd');
   $order_id = check_plain($_POST['order_id']);
-  $payment_status = check_plain($_POST['Result']);
-  $payment_amount = check_plain($_POST['Charge']);
-  $payment_currency = check_plain($_POST['Currency']);
-  $ErrorMessage = check_plain($_POST['ErrorMessage']);
+  $code = check_plain($_POST['code']);
+  $payment_amount = check_plain($_POST['order_total']);
+  $payment_status = 1;
+  // $payment_amount = check_plain($_POST['Charge']);
+  // $payment_currency = check_plain($_POST['Currency']);
+  // $ErrorMessage = check_plain($_POST['ErrorMessage']);
   function verify_txn($code){
         // $test_secretkey = Configuration::get('PAYSTACK_TEST_SECRETKEY');
         // $live_secretkey = Configuration::get('PAYSTACK_LIVE_SECRETKEY');
@@ -123,17 +125,21 @@ function uc_paystack_complete($cart_id = 0) {
         return $result;
   }
 
-  $verification = verify_txn($txn_code);
-
+  // $verification = verify_txn($txn_code);
+  $order = uc_order_load($order_id);
+  // echo "<pre>";
+  // die(print_r($orders));
+  // $order = $orders[0];
+  $debugmessage = "";
   switch ($payment_status) {
     case 1: // successful transaction
-        $comment = t('MyPaymentGateway transaction ID: @PayId', array('@PayId' => $PayId));
-        uc_payment_enter($order->order_id, 'myPaymentGateway', $payment_amount, $order->uid, NULL, $comment);
+        $comment = t('Paystack transaction ID: @PayId', array('@PayId' => $code));
+        uc_payment_enter($order->order_id, 'Paystack', $payment_amount, $order->uid, NULL, $comment);
         uc_cart_complete_sale($order);
-        uc_order_comment_save($order->order_id, 0, t('Payment of @amount @currency submitted through myPaymentGateway.', array('@amount' =>   $price , '@currency' => $payment_currency)), 'order', 'payment_received');
-        uc_order_comment_save($order->order_id, 0, t('MyPaymentGateway reported a payment of @amount @currency', array('@amount' =>   $payment_amount , '@currency' => $payment_currency)));
+        uc_order_comment_save($order->order_id, 0, t('Payment of @amount @currency submitted through Paystack.', array('@amount' =>   $payment_amount , '@currency' => 'NGN')), 'order', 'payment_received');
+        uc_order_comment_save($order->order_id, 0, t('Paystack reported a payment of @amount @currency', array('@amount' =>   $payment_amount , '@currency' => 'NGN')));
         drupal_set_message($debugmessage . t('Your payment was completed.'));
-        drupal_goto(variable_get('uc_mypayment_success_return_url', 'cart'));
+        drupal_goto(variable_get('paystack_success_return_url', 'cart'));
         break;
     case 2: //error
         $message = $debugmessage . t("Your payment failed with following error message: @Error", array('@Error' => $ErrorMessage));
