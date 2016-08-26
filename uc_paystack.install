@@ -17,14 +17,14 @@ function uc_paystack_schema() {
   $schema['uc_payment_paystack_codes'] = array(
     'description' => 'Logs paystack Instant Payment Notifications.',
     'fields' => array(
+      'code_id' => array(
+        'description' => 'Increment',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'order_id' => array(
-        'code_id' => array(
-          'description' => 'The order ID.',
-          'type' => 'int',
-          'unsigned' => TRUE,
-          'not null' => TRUE,
-          'default' => 0,
-        ),
         'description' => 'The order ID.',
         'type' => 'int',
         'unsigned' => TRUE,
