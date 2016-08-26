@@ -163,7 +163,7 @@ $form['#theme_wrappers'] = array();
     <input type="hidden" value="'.$data['cart_id'].'" name="cart_id">
     <input type="hidden" value="'.$pcode.'" name="code">
     <input type="hidden" value="uc_paystack_form" name="form_id">
-    <script data-ref="{'.$pcode.'}" data-amount="2700000" data-email="'.$order->primary_email.'" data-key="pk_test_ef545536556b0431b11fd729ccb7c4b633df1340" src="https://js.paystack.co/v1/inline.js">
+    <script data-ref="'.$pcode.'" data-amount="'.($data['order_total'] * 100).'" data-email="'.$order->primary_email.'" data-key="pk_test_ef545536556b0431b11fd729ccb7c4b633df1340" src="https://js.paystack.co/v1/inline.js">
 	    </script></form>'
 	);
 	//
