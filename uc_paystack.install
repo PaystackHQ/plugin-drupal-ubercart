@@ -18,6 +18,13 @@ function uc_paystack_schema() {
     'description' => 'Logs paystack Instant Payment Notifications.',
     'fields' => array(
       'order_id' => array(
+        'code_id' => array(
+          'description' => 'The order ID.',
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+        ),
         'description' => 'The order ID.',
         'type' => 'int',
         'unsigned' => TRUE,
