@@ -65,5 +65,7 @@ function uc_paystack_complete($cart_id = 0) {
     $result = "<p>Your order is complete! Your order number is ".$order->order_id.".</p>";
     $result.= "<p> Your payment transaction code is :#".$code.", <a href='".$orderurl."'> view your current order status</a> and order history.</p> <p><a href='".getBaseUrl()."'>Return to the front page.</a></p>  </div>";
     return $result;
-  }
+
+    // drupal_goto('cart/checkout/complete');
+}
 }

@@ -5,9 +5,9 @@
  * Install file for uc_gestpay.module.
  */
 
-function uc_paystack_uninstall() {
-  db_query("DELETE FROM {variable} WHERE name LIKE 'uc_paystack_%%'");
-}
+// function uc_paystack_uninstall() {
+//   db_query("DELETE FROM {variable} WHERE name LIKE 'uc_paystack_%%'");
+// }
 /**
  * Implements hook_schema().
  */
@@ -20,9 +20,8 @@ function uc_paystack_schema() {
       'code_id' => array(
         'description' => 'Increment',
         'type' => 'serial',
-        'unsigned' => TRUE,
+        'size' => 'medium',
         'not null' => TRUE,
-        'default' => 0,
       ),
       'order_id' => array(
         'description' => 'The order ID.',
@@ -54,8 +53,9 @@ function uc_paystack_schema() {
       ),
     ),
     'indexes' => array(
-      'order_id' => array('order_id'),
+      'code_id' => array('code_id'),
     ),
+    'primary key' => array( 'code_id'),
     'foreign keys' => array(
       'uc_orders' => array(
         'table' => 'uc_orders',
