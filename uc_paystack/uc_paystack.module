@@ -4,9 +4,7 @@ function uc_paystack_menu() {
   $items['cart/paystack/complete'] = array(
     'title' => 'Order complete',
     'page callback' => 'uc_paystack_complete',
-    // 'page arguments' => array(1, 2),
     'access arguments' => array('access content'),
-    // 'access callback' => 'uc_mypayment_completion_access',
     'type' => MENU_CALLBACK,
     'file' => 'uc_paystack.pages.inc',
   );
@@ -15,7 +13,7 @@ function uc_paystack_menu() {
 function uc_paystack_uc_payment_gateway() {
   $gateways['uc_paystack'] = array(
     'title' => t('Paystack'),
-    'description' => t('Process payments through my custom payment gateway'),
+    'description' => t('Process payments through Paystack'),
   );
   return $gateways;
 }
@@ -53,31 +51,29 @@ function uc_paystack_method($op, &$order) {
         '#title' => t('Test Secret Key'),
         '#description' => t('Test Public Key'),
         '#default_value' => variable_get('test_secretkey'),
-        );
+      );
       $form['live_publictkey'] = array(
         '#type' => 'textfield',
         '#title' => t('Live Secret Key'),
         '#description' => t('Live Public Key'),
         '#default_value' => variable_get('live_publickey'),
-        );
-        $form['live_secretkey'] = array(
-          '#type' => 'textfield',
-          '#title' => t('Live Secret Key'),
-          '#description' => t('Live Secret Key'),
-          '#default_value' => variable_get('live_secretkey'),
-          );
+      );
+      $form['live_secretkey'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Live Secret Key'),
+        '#description' => t('Live Secret Key'),
+        '#default_value' => variable_get('live_secretkey'),
+      );
       $form['paystack_mode'] = array(
         '#type' => 'radios',
         '#title' => t('Annotations will be deleted'),
         '#description' => t('Select a method for deleting annotations.'),
         '#default_value' => variable_get('paystack_mode'),
-        // '#values' => array( 0 => 'LIVE', 1 => 'TEST'),
-        '#options' => array( 'live' =>
-        t('Live'), 'test' =>
-        t('Test'))
+        '#options' => array(
+           'live' => t('Live'),
+          'test' => t('Test')
+          )
       );
-
-
       return $form;
   }
 }
@@ -92,21 +88,13 @@ function uc_paystack_form($form, &$form_state, $order) {
   $cart_id = uc_cart_get_id();
 
   function getBaseUrl(){
-      // output: /myproject/index.php
-      $currentPath = $_SERVER['PHP_SELF'];
-
-      // output: Array ( [dirname] => /myproject [basename] => index.php [extension] => php [filename] => index )
-      $pathInfo = pathinfo($currentPath);
-
-      // output: localhost
-      $hostName = $_SERVER['HTTP_HOST'];
-
-      // output: http://
-      $protocol = strtolower(substr($_SERVER["SERVER_PROTOCOL"],0,5))=='https://'?'https://':'http://';
-
-      // return: http://localhost/myproject/
-      return $protocol.$hostName.$pathInfo['dirname']."/";
+    $currentPath = $_SERVER['PHP_SELF'];
+    $pathInfo = pathinfo($currentPath);
+    $hostName = $_SERVER['HTTP_HOST'];
+    $protocol = strtolower(substr($_SERVER["SERVER_PROTOCOL"],0,5))=='https://'?'https://':'http://';
+    return $protocol.$hostName.$pathInfo['dirname']."/";
   }
+  ////
   function generate_new_code($length = 10){
     $characters = 'RSTUVW01234ABCDEFGHIJ56789KLMNOPQXYZ';
     $charactersLength = strlen($characters);
@@ -138,6 +126,7 @@ function uc_paystack_form($form, &$form_state, $order) {
 
       return $code;
   }
+
   $data = array(
     'timestamp' => time(),
     'order_id' => $order->order_id,
@@ -177,7 +166,7 @@ function uc_paystack_form($form, &$form_state, $order) {
 	  '#markup' => '<form accept-charset="UTF-8" id="uc-paystack-form" method="post" action="'.$actionurl.'">
     <input type="hidden" value="'.$data['timestamp'].'" name="timestamp">
     <input type="hidden" value="'.$data['order_id'].'" name="order_id">
-    <input type="hidden" value="'.$data['order_total'].'" name="order_total">
+    <input type="hidden" value="'.$order->order_total.'" name="order_total">
     <input type="hidden" value="'.$data['customer_email'].'" name="customer_email">
     <input type="hidden" value="'.$data['cart_id'].'" name="cart_id">
     <input type="hidden" value="'.$pcode.'" name="code">
