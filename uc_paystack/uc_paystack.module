@@ -52,9 +52,9 @@ function uc_paystack_method($op, &$order) {
         '#description' => t('Test Public Key'),
         '#default_value' => variable_get('test_secretkey'),
       );
-      $form['live_publictkey'] = array(
+      $form['live_publickey'] = array(
         '#type' => 'textfield',
-        '#title' => t('Live Secret Key'),
+        '#title' => t('Live Public Key'),
         '#description' => t('Live Public Key'),
         '#default_value' => variable_get('live_publickey'),
       );
