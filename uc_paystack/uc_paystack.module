@@ -149,7 +149,8 @@ function uc_paystack_form($form, &$form_state, $order) {
   }
   $pcode = getPaystackcode($order_id,$order->primary_email);
 
-  $actionurl  = getBaseUrl().'/cart/paystack/complete';
+  // $actionurl  = getBaseUrl().'/cart/paystack/complete';
+  $actionurl  = '/cart/paystack/complete';
 // die('eddd'.getBaseUrl());
   $test = variable_get ('test_publickey', '');
   $live = variable_get ('live_publickey', '');
