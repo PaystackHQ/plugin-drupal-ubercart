@@ -1,10 +1,17 @@
+# Drupal Ubercart Paystack module
 
-# Plugin Drupal Ubercart
-
-Welcome to the Plugin Drupal Ubercart repository on GitHub. 
+Welcome to the Drupal Ubercart Paystack module repository on GitHub. 
 
 Here you can browse the source code, look at open issues and keep track of development.
 
+# Installation
+
+- [Download the source from this repository](https://github.com/PaystackHQ/plugin-drupal-ubercart/archive/master.zip). 
+- Extract the files.
+- Copy the `uc_paystack` folder into the `/ubercart/payment/` folder on your site.
+- Enable the `Paystack` module which will now be listed as a payment module for ubercart.
+- Configure your installation by visiting `[yoursite]/admin/store/settings/payment/method/paystack` in the browser. Your Paystack keys are available at: [Paystack Dashboard > Settings > API Keys & Webhooks](https://dashboard.paystack.com/#/settings/developer)
+- Make money!
 
 ## Documentation
 
