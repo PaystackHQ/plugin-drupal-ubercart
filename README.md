@@ -4,7 +4,7 @@ Welcome to the Drupal Ubercart Paystack module repository on GitHub.
 Here you can browse the source code, look at open issues and keep track of development.
 
 
-## **Deprecation Notice**
+## :warning: **Deprecation Notice**
 
 We regret to inform you that the Drupal Ubercart Paystack module is now deprecated and will no longer be actively maintained or supported.
 
